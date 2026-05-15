@@ -4,16 +4,49 @@ version = "1.0.0"
 description = "A Python package template."
 readme = "README.md"
 
-requires-python = ">=3.8"
+requires-python = ">=3.10"
+
+dependencies = [
+    "datajoint",
+    "djutils",
+    "fnn @ git+https://github.com/cajal/fnn.git",
+    "foundation",
+    "ipykernel>=6.29.5",
+    "matplotlib>=3.10.9",
+    "pillow>=12.2.0",
+    "plotly>=6.7.0",
+    "scikit-learn>=1.7.2",
+    "torch>=2.12.0",
+    "torchvision>=0.27.0",
+]
 
 
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[dependency-groups]
+dev = []
 
+[tool.uv]
+# cajal/foundation pins legacy versions with no Python 3.12 wheels; override to modern ones.
+override-dependencies = [
+    "av>=12",
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "scipy>=1.11",
+    "Pillow>=10",
+    "datajoint>=0.14,<2",
+]
 
+[[tool.uv.index]]
+# Driver 535 supports CUDA 12.x; cu130 wheels need driver ~580+.
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true
 
-
-
-
+[tool.uv.sources]
+foundation = { git = "https://github.com/cajal/foundation.git" }
+djutils = { git = "https://github.com/cajal/djutils.git" }
+torch = { index = "pytorch-cu126" }
+torchvision = { index = "pytorch-cu126" }
