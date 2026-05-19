@@ -25,16 +25,31 @@ def play_torch_video(video_tensor, fps=30):
             "Input video_tensor must have 1 or 3 channels (grayscale or RGB)."
         )
 
+    # Lock vmin/vmax based on the dtype's natural range so that a constant
+    # first frame (e.g. a blank/grey lead-in) doesn't degenerate the norm and
+    # clip later frames.
+    if video_tensor.dtype == torch.uint8:
+        vmin, vmax = 0, 255
+    else:
+        vmin, vmax = 0.0, 1.0
+
     fig, ax = plt.subplots()
     ax.axis("off")  # Turn off axes for better visualization
 
     if channels == 1:
         img = ax.imshow(
-            video_tensor[0, 0].cpu().numpy(), cmap="gray", interpolation="nearest"
+            video_tensor[0, 0].cpu().numpy(),
+            cmap="gray",
+            vmin=vmin,
+            vmax=vmax,
+            interpolation="nearest",
         )
     else:  # channels == 3
         img = ax.imshow(
-            video_tensor[:, 0].permute(1, 2, 0).cpu().numpy(), interpolation="nearest"
+            video_tensor[:, 0].permute(1, 2, 0).cpu().numpy(),
+            vmin=vmin,
+            vmax=vmax,
+            interpolation="nearest",
         )
 
     def update(frame):

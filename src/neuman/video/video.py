@@ -58,6 +58,14 @@ class Video:
                 "Video must have 1 or 3 channels (grayscale or RGB)."
             )
 
+        # Lock vmin/vmax based on the dtype's natural range so that a constant
+        # first frame (e.g. a blank/grey lead-in) doesn't degenerate the norm and
+        # clip later frames.
+        if self.frames.dtype == torch.uint8:
+            vmin, vmax = 0, 255
+        else:
+            vmin, vmax = 0.0, 1.0
+
         # Create figure with appropriate size based on video dimensions
         fig, ax = plt.subplots(figsize=(width / dpi, height / dpi), dpi=dpi)
         ax.axis("off")
@@ -66,11 +74,18 @@ class Video:
         # Initialize the image
         if channels == 1:
             img = ax.imshow(
-                self.frames[0, 0].cpu().numpy(), cmap="gray", interpolation="nearest"
+                self.frames[0, 0].cpu().numpy(),
+                cmap="gray",
+                vmin=vmin,
+                vmax=vmax,
+                interpolation="nearest",
             )
         else:  # channels == 3
             img = ax.imshow(
-                self.frames[:, 0].permute(1, 2, 0).cpu().numpy(), interpolation="nearest"
+                self.frames[:, 0].permute(1, 2, 0).cpu().numpy(),
+                vmin=vmin,
+                vmax=vmax,
+                interpolation="nearest",
             )
 
         def update(frame):
